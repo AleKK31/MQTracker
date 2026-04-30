@@ -1,0 +1,33 @@
+{
+  "name": "tracemq",
+  "version": "1.0.0",
+  "description": "",
+  "main": "esbuild.config.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AleKK31/TraceMQ.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/AleKK31/TraceMQ/issues"
+  },
+  "homepage": "https://github.com/AleKK31/TraceMQ#readme",
+  "devDependencies": {
+    "@types/amqplib": "^0.10.8",
+    "@types/node": "^25.6.0",
+    "@types/vscode": "^1.118.0",
+    "typescript": "^6.0.3"
+  },
+  "dependencies": {
+    "amqplib": "^1.0.3",
+    "undici": "^8.1.0",
+    "uuid": "^14.0.0",
+    "zod": "^4.4.1"
+  }
+}

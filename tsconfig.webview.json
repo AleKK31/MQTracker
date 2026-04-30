@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "lib": ["ES2020", "DOM"],
+    "resolveJsonModule": true
+  },
+  "include": [
+    "src/ui/webview/protocol.ts",
+    "src/core/models/**/*",
+    "webview-ui/src/**/*"
+  ]
+}
