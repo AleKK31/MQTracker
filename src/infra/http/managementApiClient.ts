@@ -1,4 +1,5 @@
-import { request } from 'undici';
+import * as http from 'http';
+import * as https from 'https';
 import type { IManagementApi, BrokerOverview } from '../../core/ports/IManagementApi';
 import type { Queue } from '../../core/models/queue';
 import type { Exchange } from '../../core/models/exchange';
@@ -42,22 +43,39 @@ export class ManagementApiClient implements IManagementApi {
     return data.map(mapBinding);
   }
 
-  private async get<T>(path: string): Promise<T> {
+  private get<T>(path: string, timeoutMs = 10_000): Promise<T> {
     const url = `${this.baseUrl}${path}`;
-    const { statusCode, body } = await request(url, {
-      method: 'GET',
-      headers: {
-        Authorization: this.authHeader,
-        Accept: 'application/json',
-      },
+    const lib = url.startsWith('https') ? https : http;
+
+    return new Promise((resolve, reject) => {
+      const req = lib.get(url, {
+        headers: {
+          Authorization: this.authHeader,
+          Accept: 'application/json',
+        },
+        timeout: timeoutMs,
+      }, (res) => {
+        const chunks: Buffer[] = [];
+        res.on('data', (chunk: Buffer) => chunks.push(chunk));
+        res.on('end', () => {
+          const text = Buffer.concat(chunks).toString('utf-8');
+          if ((res.statusCode ?? 0) < 200 || (res.statusCode ?? 0) >= 300) {
+            reject(new Error(`ManagementApi GET ${path} returned ${res.statusCode}`));
+            return;
+          }
+          try {
+            resolve(JSON.parse(text) as T);
+          } catch {
+            reject(new Error(`ManagementApi GET ${path}: invalid JSON response`));
+          }
+        });
+        res.on('error', reject);
+      });
+      req.on('timeout', () => {
+        req.destroy(new Error(`ManagementApi GET ${path} timed out after ${timeoutMs}ms`));
+      });
+      req.on('error', reject);
     });
-
-    if (statusCode < 200 || statusCode >= 300) {
-      throw new Error(`ManagementApi GET ${path} returned ${statusCode}`);
-    }
-
-    const text = await body.text();
-    return JSON.parse(text) as T;
   }
 }
 

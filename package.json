@@ -1,32 +1,138 @@
 {
   "name": "tracemq",
+  "displayName": "TraceMQ",
+  "description": "RabbitMQ inspector and message tracing tool",
   "version": "1.0.0",
-  "description": "",
-  "main": "esbuild.config.js",
+  "publisher": "alekkk31",
+  "license": "ISC",
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "tracemq-sidebar",
+          "title": "TraceMQ",
+          "icon": "media/rabbit.svg"
+        }
+      ]
+    },
+    "views": {
+      "tracemq-sidebar": [
+        {
+          "id": "tracemq.connections",
+          "name": "Connections"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "tracemq.addConnection",
+        "title": "Add Connection",
+        "icon": "$(add)",
+        "category": "TraceMQ"
+      },
+      {
+        "command": "tracemq.refresh",
+        "title": "Refresh",
+        "icon": "$(refresh)",
+        "category": "TraceMQ"
+      },
+      {
+        "command": "tracemq.removeConnection",
+        "title": "Remove Connection",
+        "icon": "$(trash)",
+        "category": "TraceMQ"
+      },
+      {
+        "command": "tracemq.openMessageViewer",
+        "title": "Open Message Viewer",
+        "icon": "$(eye)",
+        "category": "TraceMQ"
+      },
+      {
+        "command": "tracemq.publishMessage",
+        "title": "Publish Message",
+        "icon": "$(send)",
+        "category": "TraceMQ"
+      },
+      {
+        "command": "tracemq.openConsumerInCode",
+        "title": "Find Consumer in Code",
+        "icon": "$(search)",
+        "category": "TraceMQ"
+      }
+    ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "tracemq.addConnection",
+          "when": "view == tracemq.connections",
+          "group": "navigation"
+        },
+        {
+          "command": "tracemq.refresh",
+          "when": "view == tracemq.connections",
+          "group": "navigation"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "tracemq.removeConnection",
+          "when": "view == tracemq.connections && viewItem == connection",
+          "group": "inline"
+        },
+        {
+          "command": "tracemq.openMessageViewer",
+          "when": "view == tracemq.connections && viewItem == queue",
+          "group": "inline"
+        },
+        {
+          "command": "tracemq.publishMessage",
+          "when": "view == tracemq.connections && viewItem == connection",
+          "group": "1_actions"
+        },
+        {
+          "command": "tracemq.openConsumerInCode",
+          "when": "view == tracemq.connections && viewItem == queue",
+          "group": "1_actions"
+        }
+      ]
+    }
+  },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "node esbuild.config.js",
+    "build:prod": "node esbuild.config.js --production",
+    "watch": "node esbuild.config.js --watch",
+    "typecheck": "tsc -p . --noEmit",
+    "clean": "rm -rf dist"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/AleKK31/TraceMQ.git"
+    "url": "https://github.com/AleKK31/TraceMQ.git"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "commonjs",
   "bugs": {
     "url": "https://github.com/AleKK31/TraceMQ/issues"
   },
   "homepage": "https://github.com/AleKK31/TraceMQ#readme",
+  "type": "commonjs",
   "devDependencies": {
     "@types/amqplib": "^0.10.8",
     "@types/node": "^25.6.0",
     "@types/vscode": "^1.118.0",
+    "esbuild": "^0.28.0",
     "typescript": "^6.0.3"
   },
   "dependencies": {
     "amqplib": "^1.0.3",
-    "undici": "^8.1.0",
     "uuid": "^14.0.0",
     "zod": "^4.4.1"
   }

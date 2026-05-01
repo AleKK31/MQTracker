@@ -1,5 +1,4 @@
 import * as vscode from 'vscode';
-import { v4 as uuidv4 } from 'uuid';
 import { ConnectionController } from '../../controllers/connectionController';
 import { Queue } from '../../core/models/queue';
 import { ConsumerScanner } from '../../core/services/consumerScanner';
@@ -7,7 +6,7 @@ import { Logger } from '../../utils/logger';
 import { TreeNode } from '../tree/nodes/treeNode';
 import { RabbitTreeProvider } from '../tree/rabbitTreeProvider';
 import { MessageViewerPanel } from '../webview/messageViewerPanel';
-import { Connection } from '../../core/models/connection';
+import { ConnectionFormPanel } from '../webview/connectionFormPanel';
 
 export function registerCommands(
   context: vscode.ExtensionContext,
@@ -16,7 +15,7 @@ export function registerCommands(
   logger: Logger,
 ): void {
   const cmds: [string, (...args: unknown[]) => unknown][] = [
-    ['tracemq.addConnection', () => addConnection(controller, treeProvider)],
+    ['tracemq.addConnection', () => addConnection(context.extensionUri, controller, treeProvider)],
     ['tracemq.refresh', () => treeProvider.refresh()],
     ['tracemq.removeConnection', (node) => removeConnection(node as TreeNode, controller, treeProvider)],
     ['tracemq.openMessageViewer', (node) => openMessageViewer(node as TreeNode, controller, logger, context.extensionUri)],
@@ -30,45 +29,17 @@ export function registerCommands(
 }
 
 async function addConnection(
+  extensionUri: vscode.Uri,
   controller: ConnectionController,
   treeProvider: RabbitTreeProvider,
 ): Promise<void> {
-  const name = await vscode.window.showInputBox({ prompt: 'Connection name', placeHolder: 'My RabbitMQ' });
-  if (!name) return;
-
-  const host = await vscode.window.showInputBox({ prompt: 'Host', value: 'localhost' });
-  if (!host) return;
-
-  const portStr = await vscode.window.showInputBox({ prompt: 'AMQP Port', value: '5672' });
-  if (!portStr) return;
-
-  const vhost = await vscode.window.showInputBox({ prompt: 'VHost', value: '/' });
-  if (!vhost) return;
-
-  const username = await vscode.window.showInputBox({ prompt: 'Username', value: 'guest' });
-  if (!username) return;
-
-  const password = await vscode.window.showInputBox({ prompt: 'Password', password: true });
-  if (password === undefined) return;
-
-  const mgmtPortStr = await vscode.window.showInputBox({ prompt: 'Management Port', value: '15672' });
-  if (!mgmtPortStr) return;
-
-  const connection: Connection = {
-    id: uuidv4(),
-    name,
-    host,
-    port: parseInt(portStr, 10),
-    vhost,
-    username,
-    managementPort: parseInt(mgmtPortStr, 10),
-    useTls: false,
-  };
+  const result = await ConnectionFormPanel.show(extensionUri);
+  if (!result) return;
 
   try {
-    await controller.addConnection(connection, password);
+    await controller.addConnection(result.connection, result.password);
     treeProvider.refresh();
-    vscode.window.showInformationMessage(`TraceMQ: Connected to ${name}`);
+    vscode.window.showInformationMessage(`TraceMQ: Connected to ${result.connection.name}`);
   } catch (err) {
     vscode.window.showErrorMessage(`TraceMQ: Connection failed — ${String(err)}`);
   }
