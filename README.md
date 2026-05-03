@@ -1,4 +1,4 @@
-# TraceMQ
+# MQTracker
 
 Extensão para Visual Studio Code que permite **inspecionar, debugar e interagir com eventos do RabbitMQ em tempo real**, diretamente no editor.
 
@@ -21,7 +21,7 @@ Extensão para Visual Studio Code que permite **inspecionar, debugar e interagir
 
 ## Como usar
 
-1. Abra o TraceMQ pela Activity Bar
+1. Abra o MQTracker pela Activity Bar
 2. Clique em **+** para criar uma conexão
 3. Informe:
    - Host

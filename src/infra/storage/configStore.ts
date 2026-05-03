@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import type { Connection } from '../../core/models/connection';
 
-const CONNECTIONS_KEY = 'tracemq.connections';
+const CONNECTIONS_KEY = 'mqtracker.connections';
 
 export class ConfigStore {
   constructor(
@@ -36,7 +36,7 @@ export class ConfigStore {
   }
 
   private passwordKey(connectionId: string): string {
-    return `tracemq.password.${connectionId}`;
+    return `mqtracker.password.${connectionId}`;
   }
 }
 

@@ -109,7 +109,7 @@ describe('ReplayService', () => {
       );
     });
 
-    it('injects x-tracemq-* replay headers', async () => {
+    it('injects x-mqtracker-* replay headers', async () => {
       const buffer = new MessageBuffer(10);
       const msg = makeMessage({ id: 'msg-1', headers: { 'x-source': 'original' } });
       buffer.add(msg);
@@ -120,9 +120,9 @@ describe('ReplayService', () => {
 
       const [, , , options] = (broker.publish as jest.Mock).mock.calls[0] as [string, string, Buffer, Record<string, unknown>];
       const headers = options['headers'] as Record<string, unknown>;
-      expect(headers['x-tracemq-replay']).toBe(true);
-      expect(headers['x-tracemq-original-id']).toBe('msg-1');
-      expect(typeof headers['x-tracemq-replayed-at']).toBe('string');
+      expect(headers['x-mqtracker-replay']).toBe(true);
+      expect(headers['x-mqtracker-original-id']).toBe('msg-1');
+      expect(typeof headers['x-mqtracker-replayed-at']).toBe('string');
     });
 
     it('preserves original headers alongside replay headers', async () => {

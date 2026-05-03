@@ -1,6 +1,6 @@
 {
-  "name": "tracemq",
-  "displayName": "TraceMQ",
+  "name": "mqtracker",
+  "displayName": "MQTracker",
   "description": "RabbitMQ inspector and message tracing tool",
   "version": "1.0.0",
   "publisher": "alekkk31",
@@ -19,90 +19,90 @@
     "viewsContainers": {
       "activitybar": [
         {
-          "id": "tracemq-sidebar",
-          "title": "TraceMQ",
+          "id": "mqtracker-sidebar",
+          "title": "MQTracker",
           "icon": "media/rabbit.svg"
         }
       ]
     },
     "views": {
-      "tracemq-sidebar": [
+      "mqtracker-sidebar": [
         {
-          "id": "tracemq.connections",
+          "id": "mqtracker.connections",
           "name": "Connections"
         }
       ]
     },
     "commands": [
       {
-        "command": "tracemq.addConnection",
+        "command": "mqtracker.addConnection",
         "title": "Add Connection",
         "icon": "$(add)",
-        "category": "TraceMQ"
+        "category": "MQTracker"
       },
       {
-        "command": "tracemq.refresh",
+        "command": "mqtracker.refresh",
         "title": "Refresh",
         "icon": "$(refresh)",
-        "category": "TraceMQ"
+        "category": "MQTracker"
       },
       {
-        "command": "tracemq.removeConnection",
+        "command": "mqtracker.removeConnection",
         "title": "Remove Connection",
         "icon": "$(trash)",
-        "category": "TraceMQ"
+        "category": "MQTracker"
       },
       {
-        "command": "tracemq.openMessageViewer",
+        "command": "mqtracker.openMessageViewer",
         "title": "Open Message Viewer",
         "icon": "$(eye)",
-        "category": "TraceMQ"
+        "category": "MQTracker"
       },
       {
-        "command": "tracemq.publishMessage",
+        "command": "mqtracker.publishMessage",
         "title": "Publish Message",
         "icon": "$(send)",
-        "category": "TraceMQ"
+        "category": "MQTracker"
       },
       {
-        "command": "tracemq.openConsumerInCode",
+        "command": "mqtracker.openConsumerInCode",
         "title": "Find Consumer in Code",
         "icon": "$(search)",
-        "category": "TraceMQ"
+        "category": "MQTracker"
       }
     ],
     "menus": {
       "view/title": [
         {
-          "command": "tracemq.addConnection",
-          "when": "view == tracemq.connections",
+          "command": "mqtracker.addConnection",
+          "when": "view == mqtracker.connections",
           "group": "navigation"
         },
         {
-          "command": "tracemq.refresh",
-          "when": "view == tracemq.connections",
+          "command": "mqtracker.refresh",
+          "when": "view == mqtracker.connections",
           "group": "navigation"
         }
       ],
       "view/item/context": [
         {
-          "command": "tracemq.removeConnection",
-          "when": "view == tracemq.connections && viewItem == connection",
+          "command": "mqtracker.removeConnection",
+          "when": "view == mqtracker.connections && viewItem == connection",
           "group": "inline"
         },
         {
-          "command": "tracemq.openMessageViewer",
-          "when": "view == tracemq.connections && viewItem == queue",
+          "command": "mqtracker.openMessageViewer",
+          "when": "view == mqtracker.connections && viewItem == queue",
           "group": "inline"
         },
         {
-          "command": "tracemq.publishMessage",
-          "when": "view == tracemq.connections && viewItem == connection",
+          "command": "mqtracker.publishMessage",
+          "when": "view == mqtracker.connections && viewItem == connection",
           "group": "1_actions"
         },
         {
-          "command": "tracemq.openConsumerInCode",
-          "when": "view == tracemq.connections && viewItem == queue",
+          "command": "mqtracker.openConsumerInCode",
+          "when": "view == mqtracker.connections && viewItem == queue",
           "group": "1_actions"
         }
       ]
@@ -119,12 +119,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/AleKK31/TraceMQ.git"
+    "url": "https://github.com/AleKK31/MQTracker.git"
   },
   "bugs": {
-    "url": "https://github.com/AleKK31/TraceMQ/issues"
+    "url": "https://github.com/AleKK31/MQTracker/issues"
   },
-  "homepage": "https://github.com/AleKK31/TraceMQ#readme",
+  "homepage": "https://github.com/AleKK31/MQTracker#readme",
   "type": "commonjs",
   "devDependencies": {
     "@types/amqplib": "^0.10.8",

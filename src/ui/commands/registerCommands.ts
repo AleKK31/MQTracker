@@ -15,12 +15,12 @@ export function registerCommands(
   logger: Logger,
 ): void {
   const cmds: [string, (...args: unknown[]) => unknown][] = [
-    ['tracemq.addConnection', () => addConnection(context.extensionUri, controller, treeProvider)],
-    ['tracemq.refresh', () => treeProvider.refresh()],
-    ['tracemq.removeConnection', (node) => removeConnection(node as TreeNode, controller, treeProvider)],
-    ['tracemq.openMessageViewer', (node) => openMessageViewer(node as TreeNode, controller, logger, context.extensionUri)],
-    ['tracemq.publishMessage', (node) => publishMessage(node as TreeNode, controller)],
-    ['tracemq.openConsumerInCode', (node) => openConsumerInCode(node as TreeNode)],
+    ['mqtracker.addConnection', () => addConnection(context.extensionUri, controller, treeProvider)],
+    ['mqtracker.refresh', () => treeProvider.refresh()],
+    ['mqtracker.removeConnection', (node) => removeConnection(node as TreeNode, controller, treeProvider)],
+    ['mqtracker.openMessageViewer', (node) => openMessageViewer(node as TreeNode, controller, logger, context.extensionUri)],
+    ['mqtracker.publishMessage', (node) => publishMessage(node as TreeNode, controller)],
+    ['mqtracker.openConsumerInCode', (node) => openConsumerInCode(node as TreeNode)],
   ];
 
   for (const [id, handler] of cmds) {
@@ -39,9 +39,9 @@ async function addConnection(
   try {
     await controller.addConnection(result.connection, result.password);
     treeProvider.refresh();
-    vscode.window.showInformationMessage(`TraceMQ: Connected to ${result.connection.name}`);
+    vscode.window.showInformationMessage(`MQTracker: Connected to ${result.connection.name}`);
   } catch (err) {
-    vscode.window.showErrorMessage(`TraceMQ: Connection failed — ${String(err)}`);
+    vscode.window.showErrorMessage(`MQTracker: Connection failed — ${String(err)}`);
   }
 }
 
@@ -75,7 +75,7 @@ function openMessageViewer(
 async function publishMessage(node: TreeNode, controller: ConnectionController): Promise<void> {
   const session = node?.connectionId ? controller.getSession(node.connectionId) : undefined;
   if (!session) {
-    vscode.window.showErrorMessage('TraceMQ: Select a connection node first');
+    vscode.window.showErrorMessage('MQTracker: Select a connection node first');
     return;
   }
 
@@ -93,9 +93,9 @@ async function publishMessage(node: TreeNode, controller: ConnectionController):
   });
 
   if (published) {
-    vscode.window.showInformationMessage(`TraceMQ: Message published to ${exchange || '(default)'}/${routingKey}`);
+    vscode.window.showInformationMessage(`MQTracker: Message published to ${exchange || '(default)'}/${routingKey}`);
   } else {
-    vscode.window.showErrorMessage('TraceMQ: Publish failed — not connected');
+    vscode.window.showErrorMessage('MQTracker: Publish failed — not connected');
   }
 }
 
@@ -123,7 +123,7 @@ async function openConsumerInCode(node: TreeNode): Promise<void> {
   }
 
   if (matches.length === 0) {
-    vscode.window.showInformationMessage(`TraceMQ: No consumers found for queue "${queue.name}"`);
+    vscode.window.showInformationMessage(`MQTracker: No consumers found for queue "${queue.name}"`);
     return;
   }
 

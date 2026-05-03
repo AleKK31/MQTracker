@@ -59,7 +59,7 @@ export class ConnectionController {
     let buffer = session.buffers.get(queueName);
     if (!buffer) {
       const capacity = vscode.workspace
-        .getConfiguration('tracemq')
+        .getConfiguration('mqtracker')
         .get<number>('messageBufferCapacity', 500);
       buffer = new MessageBuffer(capacity);
       session.buffers.set(queueName, buffer);
@@ -133,7 +133,7 @@ export class ConnectionController {
     if (this.sessions.has(connection.id)) return;
 
     const maxDelay = vscode.workspace
-      .getConfiguration('tracemq')
+      .getConfiguration('mqtracker')
       .get<number>('reconnectMaxDelay', 30_000);
 
     const amqp = new AmqpClient(connection, password, this.logger, maxDelay);

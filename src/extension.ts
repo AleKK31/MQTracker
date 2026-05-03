@@ -6,18 +6,18 @@ import { RabbitTreeProvider } from './ui/tree/rabbitTreeProvider';
 import { registerCommands } from './ui/commands/registerCommands';
 
 export async function activate(context: vscode.ExtensionContext): Promise<void> {
-  const outputChannel = vscode.window.createOutputChannel('TraceMQ');
+  const outputChannel = vscode.window.createOutputChannel('MQTracker');
   const logger = new Logger(outputChannel);
   context.subscriptions.push(outputChannel);
 
-  logger.info('TraceMQ activating…');
+  logger.info('MQTracker activating…');
 
   const configStore = new ConfigStore(context.secrets, context.globalState);
   const controller = new ConnectionController(configStore, logger);
   const treeProvider = new RabbitTreeProvider(controller);
 
   context.subscriptions.push(
-    vscode.window.registerTreeDataProvider('tracemq.connections', treeProvider),
+    vscode.window.registerTreeDataProvider('mqtracker.connections', treeProvider),
   );
 
   registerCommands(context, controller, treeProvider, logger);
@@ -30,7 +30,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     logger.error('Failed to restore connections', err);
   }
 
-  logger.info('TraceMQ activated');
+  logger.info('MQTracker activated');
 }
 
 export async function deactivate(): Promise<void> {

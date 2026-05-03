@@ -37,8 +37,8 @@ export class MessageViewerPanel {
     private readonly extensionUri: vscode.Uri,
   ) {
     this.panel = vscode.window.createWebviewPanel(
-      'tracemq.messageViewer',
-      `TraceMQ: ${queueName}`,
+      'mqtracker.messageViewer',
+      `MQTracker: ${queueName}`,
       vscode.ViewColumn.One,
       {
         enableScripts: true,
@@ -108,11 +108,11 @@ export class MessageViewerPanel {
             msg.contentType,
           );
           if (!published) {
-            vscode.window.showErrorMessage('TraceMQ: Publish failed — not connected');
+            vscode.window.showErrorMessage('MQTracker: Publish failed — not connected');
           }
         } catch (err) {
           this.logger.error('Publish failed', err);
-          vscode.window.showErrorMessage(`TraceMQ: Publish failed — ${String(err)}`);
+          vscode.window.showErrorMessage(`MQTracker: Publish failed — ${String(err)}`);
         }
         break;
     }
@@ -164,7 +164,7 @@ export class MessageViewerPanel {
              script-src 'nonce-${nonce}' ${cspSource};
              style-src 'unsafe-inline' ${cspSource};
              img-src ${cspSource} data:;" />
-  <title>TraceMQ: ${this.queueName}</title>
+  <title>MQTracker: ${this.queueName}</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: var(--vscode-font-family); font-size: var(--vscode-font-size); color: var(--vscode-foreground); background: var(--vscode-editor-background); display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
@@ -210,7 +210,7 @@ export class MessageViewerPanel {
     </div>
   </div>
   <div id="error-boundary" style="display:none;padding:24px;color:var(--vscode-errorForeground);">
-    TraceMQ failed to initialize. Please reload the window (<code>Developer: Reload Window</code>).
+    MQTracker failed to initialize. Please reload the window (<code>Developer: Reload Window</code>).
     <pre id="error-detail" style="font-size:11px;margin-top:8px;"></pre>
   </div>
   <script nonce="${nonce}">
