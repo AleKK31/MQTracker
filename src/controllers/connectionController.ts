@@ -97,6 +97,24 @@ export class ConnectionController {
     session?.amqp.nackById(messageId, requeue);
   }
 
+  async unsubscribeQueue(connectionId: string, consumerTag: string): Promise<void> {
+    const session = this.sessions.get(connectionId);
+    if (!session) return;
+    await session.amqp.unsubscribe(consumerTag);
+  }
+
+  publishMessage(
+    connectionId: string,
+    exchange: string,
+    routingKey: string,
+    body: Buffer,
+    contentType: string,
+  ): boolean {
+    const session = this.sessions.get(connectionId);
+    if (!session) return false;
+    return session.amqp.publish(exchange, routingKey, body, { contentType });
+  }
+
   async replayMessage(connectionId: string, queueName: string, messageId: string): Promise<void> {
     const session = this.sessions.get(connectionId);
     if (!session) throw new Error(`No session for connection ${connectionId}`);

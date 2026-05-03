@@ -4,6 +4,7 @@ import type { IManagementApi, BrokerOverview } from '../../core/ports/IManagemen
 import type { Queue } from '../../core/models/queue';
 import type { Exchange } from '../../core/models/exchange';
 import type { Binding } from '../../core/models/binding';
+import type { QueueConsumer } from '../../core/models/consumer';
 import type { Connection } from '../../core/models/connection';
 
 export class ManagementApiClient implements IManagementApi {
@@ -41,6 +42,11 @@ export class ManagementApiClient implements IManagementApi {
   async getBindings(vhost = '%2F'): Promise<Binding[]> {
     const data = await this.get<unknown[]>(`/bindings/${encodeURIComponent(vhost)}`);
     return data.map(mapBinding);
+  }
+
+  async getConsumers(vhost = '%2F'): Promise<QueueConsumer[]> {
+    const data = await this.get<unknown[]>(`/consumers/${encodeURIComponent(vhost)}`);
+    return data.map(mapConsumer);
   }
 
   private get<T>(path: string, timeoutMs = 10_000): Promise<T> {
@@ -104,6 +110,21 @@ function mapExchange(raw: unknown): Exchange {
     autoDelete: Boolean(r['auto_delete']),
     internal: Boolean(r['internal']),
     arguments: (r['arguments'] as Record<string, unknown>) ?? {},
+  };
+}
+
+function mapConsumer(raw: unknown): QueueConsumer {
+  const r = raw as Record<string, unknown>;
+  const queue = (r['queue'] as Record<string, unknown>) ?? {};
+  const channel = (r['channel_details'] as Record<string, unknown>) ?? {};
+  return {
+    consumerTag: String(r['consumer_tag'] ?? ''),
+    queueName: String(queue['name'] ?? ''),
+    vhost: String(queue['vhost'] ?? '/'),
+    exclusive: Boolean(r['exclusive']),
+    ackMode: (r['ack_mode'] as QueueConsumer['ackMode']) ?? 'auto',
+    active: Boolean(r['active']),
+    channelUser: String(channel['user'] ?? ''),
   };
 }
 

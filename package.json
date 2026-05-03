@@ -113,6 +113,8 @@
     "build:prod": "node esbuild.config.js --production",
     "watch": "node esbuild.config.js --watch",
     "typecheck": "tsc -p . --noEmit",
+    "test": "jest",
+    "test:watch": "jest --watch",
     "clean": "rm -rf dist"
   },
   "repository": {
@@ -126,9 +128,14 @@
   "type": "commonjs",
   "devDependencies": {
     "@types/amqplib": "^0.10.8",
+    "@types/jest": "^30.0.0",
+    "@types/nock": "^10.0.3",
     "@types/node": "^25.6.0",
     "@types/vscode": "^1.118.0",
     "esbuild": "^0.28.0",
+    "jest": "^30.3.0",
+    "nock": "^14.0.14",
+    "ts-jest": "^29.4.9",
     "typescript": "^6.0.3"
   },
   "dependencies": {
