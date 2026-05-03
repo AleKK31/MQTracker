@@ -20,9 +20,9 @@ export class ReplayService {
 
     const headers: Record<string, unknown> = {
       ...message.headers,
-      'x-tracemq-replay': true,
-      'x-tracemq-original-id': id,
-      'x-tracemq-replayed-at': new Date().toISOString(),
+      'x-mqtracker-replay': true,
+      'x-mqtracker-original-id': id,
+      'x-mqtracker-replayed-at': new Date().toISOString(),
     };
 
     this.broker.publish(exchange, routingKey, content, {

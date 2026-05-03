@@ -20,8 +20,8 @@ export class ConnectionFormPanel {
 
   private constructor(extensionUri: vscode.Uri) {
     this.panel = vscode.window.createWebviewPanel(
-      'tracemq.connectionForm',
-      'TraceMQ: Add Connection',
+      'mqtracker.connectionForm',
+      'MQTracker: Add Connection',
       vscode.ViewColumn.One,
       {
         enableScripts: true,

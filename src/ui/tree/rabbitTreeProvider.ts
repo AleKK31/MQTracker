@@ -25,6 +25,8 @@ export class RabbitTreeProvider implements vscode.TreeDataProvider<TreeNode> {
       case 'connection': return this.getConnectionChildren(element);
       case 'queues-group': return this.getQueueNodes(element);
       case 'exchanges-group': return this.getExchangeNodes(element);
+      case 'exchange': return this.getBindingNodes(element);
+      case 'queue': return this.getConsumerNodes(element);
       default: return [];
     }
   }
@@ -59,13 +61,10 @@ export class RabbitTreeProvider implements vscode.TreeDataProvider<TreeNode> {
     try {
       const queues = await session.management.getQueues(session.connection.vhost);
       return queues.map((q) => {
-        const node = new TreeNode(
-          q.name,
-          'queue',
-          vscode.TreeItemCollapsibleState.None,
-          q,
-          groupNode.connectionId,
-        );
+        const collapsible = q.consumers > 0
+          ? vscode.TreeItemCollapsibleState.Collapsed
+          : vscode.TreeItemCollapsibleState.None;
+        const node = new TreeNode(q.name, 'queue', collapsible, q, groupNode.connectionId);
         node.description = `${q.messages} msg`;
         node.tooltip = `${q.messages} messages, ${q.consumers} consumers — ${q.state}`;
         return node;
@@ -85,7 +84,7 @@ export class RabbitTreeProvider implements vscode.TreeDataProvider<TreeNode> {
         const node = new TreeNode(
           e.name || '(default)',
           'exchange',
-          vscode.TreeItemCollapsibleState.None,
+          vscode.TreeItemCollapsibleState.Collapsed,
           e,
           groupNode.connectionId,
         );
@@ -94,6 +93,55 @@ export class RabbitTreeProvider implements vscode.TreeDataProvider<TreeNode> {
       });
     } catch (err) {
       return [new TreeNode(`Error: ${String(err)}`, 'exchange', vscode.TreeItemCollapsibleState.None)];
+    }
+  }
+
+  private async getConsumerNodes(queueNode: TreeNode): Promise<TreeNode[]> {
+    const session = this.controller.getSession(queueNode.connectionId!);
+    if (!session) return [];
+
+    try {
+      const allConsumers = await session.management.getConsumers(session.connection.vhost);
+      const queue = queueNode.payload as import('../../core/models/queue').Queue;
+      const consumers = allConsumers.filter((c) => c.queueName === queue.name);
+
+      if (consumers.length === 0) {
+        return [new TreeNode('No consumers', 'consumer', vscode.TreeItemCollapsibleState.None)];
+      }
+
+      return consumers.map((c) => {
+        const node = new TreeNode(c.consumerTag, 'consumer', vscode.TreeItemCollapsibleState.None, undefined, queueNode.connectionId);
+        node.description = c.channelUser;
+        node.tooltip = `Tag: ${c.consumerTag} | User: ${c.channelUser} | Ack: ${c.ackMode} | Active: ${c.active}`;
+        return node;
+      });
+    } catch (err) {
+      return [new TreeNode(`Error: ${String(err)}`, 'consumer', vscode.TreeItemCollapsibleState.None)];
+    }
+  }
+
+  private async getBindingNodes(exchangeNode: TreeNode): Promise<TreeNode[]> {
+    const session = this.controller.getSession(exchangeNode.connectionId!);
+    if (!session) return [];
+
+    try {
+      const allBindings = await session.management.getBindings(session.connection.vhost);
+      const exchange = exchangeNode.payload as import('../../core/models/exchange').Exchange;
+      const bindings = allBindings.filter((b) => b.source === exchange.name);
+
+      if (bindings.length === 0) {
+        return [new TreeNode('No bindings', 'binding', vscode.TreeItemCollapsibleState.None)];
+      }
+
+      return bindings.map((b) => {
+        const label = b.routingKey || '(empty)';
+        const node = new TreeNode(label, 'binding', vscode.TreeItemCollapsibleState.None, b, exchangeNode.connectionId);
+        node.description = `→ ${b.destination}`;
+        node.tooltip = `${b.source} → ${b.destination} (${b.destinationType}) via "${b.routingKey}"`;
+        return node;
+      });
+    } catch (err) {
+      return [new TreeNode(`Error: ${String(err)}`, 'binding', vscode.TreeItemCollapsibleState.None)];
     }
   }
 

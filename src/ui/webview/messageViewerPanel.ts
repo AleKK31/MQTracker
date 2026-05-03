@@ -1,6 +1,5 @@
 import * as vscode from 'vscode';
 import * as crypto from 'crypto';
-import * as path from 'path';
 import { z } from 'zod';
 import type { ConnectionController } from '../../controllers/connectionController';
 import type { Message } from '../../core/models/message';
@@ -28,7 +27,7 @@ export class MessageViewerPanel {
   private readonly panel: vscode.WebviewPanel;
   private readonly pendingMessages: WebviewMessage[] = [];
   private debounceTimer: NodeJS.Timeout | null = null;
-  private consumerTag: string | null = null;
+  private activeConsumerTag: string | null = null;
 
   private constructor(
     private readonly connectionId: string,
@@ -38,8 +37,8 @@ export class MessageViewerPanel {
     private readonly extensionUri: vscode.Uri,
   ) {
     this.panel = vscode.window.createWebviewPanel(
-      'tracemq.messageViewer',
-      `TraceMQ: ${queueName}`,
+      'mqtracker.messageViewer',
+      `MQTracker: ${queueName}`,
       vscode.ViewColumn.One,
       {
         enableScripts: true,
@@ -100,7 +99,21 @@ export class MessageViewerPanel {
         }
         break;
       case 'publish':
-        // handled via command
+        try {
+          const published = this.controller.publishMessage(
+            this.connectionId,
+            msg.exchange,
+            msg.routingKey,
+            Buffer.from(msg.body, 'utf-8'),
+            msg.contentType,
+          );
+          if (!published) {
+            vscode.window.showErrorMessage('MQTracker: Publish failed — not connected');
+          }
+        } catch (err) {
+          this.logger.error('Publish failed', err);
+          vscode.window.showErrorMessage(`MQTracker: Publish failed — ${String(err)}`);
+        }
         break;
     }
   }
@@ -115,7 +128,7 @@ export class MessageViewerPanel {
     this.panel.webview.postMessage({ type: 'messagesLoaded', messages: existing });
 
     // Subscribe for new messages
-    this.consumerTag = await this.controller.subscribeQueue(
+    this.activeConsumerTag = await this.controller.subscribeQueue(
       this.connectionId,
       this.queueName,
       (msg) => this.enqueueForWebview(msg),
@@ -151,7 +164,7 @@ export class MessageViewerPanel {
              script-src 'nonce-${nonce}' ${cspSource};
              style-src 'unsafe-inline' ${cspSource};
              img-src ${cspSource} data:;" />
-  <title>TraceMQ: ${this.queueName}</title>
+  <title>MQTracker: ${this.queueName}</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: var(--vscode-font-family); font-size: var(--vscode-font-size); color: var(--vscode-foreground); background: var(--vscode-editor-background); display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
@@ -196,6 +209,18 @@ export class MessageViewerPanel {
       </div>
     </div>
   </div>
+  <div id="error-boundary" style="display:none;padding:24px;color:var(--vscode-errorForeground);">
+    MQTracker failed to initialize. Please reload the window (<code>Developer: Reload Window</code>).
+    <pre id="error-detail" style="font-size:11px;margin-top:8px;"></pre>
+  </div>
+  <script nonce="${nonce}">
+    window.onerror = function(msg, _src, _line, _col, err) {
+      document.getElementById('error-boundary').style.display = 'block';
+      document.getElementById('error-detail').textContent = err ? err.stack || String(err) : String(msg);
+      document.getElementById('main').style.display = 'none';
+      document.getElementById('toolbar').style.display = 'none';
+    };
+  </script>
   <script nonce="${nonce}" src="${scriptUri}"></script>
 </body>
 </html>`;
@@ -205,6 +230,9 @@ export class MessageViewerPanel {
     const key = `${this.connectionId}:${this.queueName}`;
     MessageViewerPanel.panels.delete(key);
     if (this.debounceTimer) clearTimeout(this.debounceTimer);
+    if (this.activeConsumerTag) {
+      this.controller.unsubscribeQueue(this.connectionId, this.activeConsumerTag).catch(() => undefined);
+    }
     this.panel.dispose();
   }
 }
