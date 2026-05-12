@@ -8,7 +8,7 @@ export class ReplayService {
     private readonly broker: IBrokerClient,
   ) {}
 
-  async replay(id: MessageId, targetExchange: string, targetRoutingKey?: string): Promise<void> {
+  async replay(id: MessageId, targetExchange?: string, targetRoutingKey?: string): Promise<void> {
     const message = this.store.get(id);
     if (!message) {
       throw new Error(`Message ${id} not found in buffer`);

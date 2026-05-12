@@ -8,6 +8,7 @@ import type { Logger } from '../../utils/logger';
 export class AmqpClient implements IBrokerClient {
   private model: amqplib.ChannelModel | null = null;
   private channel: amqplib.Channel | null = null;
+  private publishChannel: amqplib.Channel | null = null;
   private attemptCount = 0;
   private reconnectTimer: NodeJS.Timeout | null = null;
   private destroyed = false;
@@ -36,6 +37,7 @@ export class AmqpClient implements IBrokerClient {
       const url = this.buildUrl();
       this.model = await amqplib.connect(url);
       this.channel = await this.model.createChannel();
+      this.publishChannel = await this.model.createChannel();
       this.attemptCount = 0;
       this.logger.info(`AmqpClient connected to ${this.config.host}:${this.config.port}`);
 
@@ -63,6 +65,7 @@ export class AmqpClient implements IBrokerClient {
       this.logger.warn('AmqpClient connection closed unexpectedly, scheduling reconnect');
       this.model = null;
       this.channel = null;
+      this.publishChannel = null;
       this.scheduleReconnect();
     }
   }
@@ -83,11 +86,13 @@ export class AmqpClient implements IBrokerClient {
     }
     try {
       await this.channel?.close();
+      await this.publishChannel?.close();
       await this.model?.close();
     } catch {
       // ignore errors on graceful close
     } finally {
       this.channel = null;
+      this.publishChannel = null;
       this.model = null;
       this.deliveryTagMap.clear();
     }
@@ -138,8 +143,8 @@ export class AmqpClient implements IBrokerClient {
   }
 
   publish(exchange: string, routingKey: string, content: Buffer, options?: Record<string, unknown>): boolean {
-    if (!this.channel) return false;
-    return this.channel.publish(exchange, routingKey, content, options as amqplib.Options.Publish);
+    if (!this.publishChannel) return false;
+    return this.publishChannel.publish(exchange, routingKey, content, options as amqplib.Options.Publish);
   }
 
   onError(handler: ErrorHandler): void {

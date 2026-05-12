@@ -89,12 +89,25 @@ export class ConnectionController {
 
   ackMessage(connectionId: string, messageId: string): void {
     const session = this.sessions.get(connectionId);
-    session?.amqp.ackById(messageId);
+    if (!session) return;
+    session.amqp.ackById(messageId);
+    this.removeFromBuffer(session, messageId);
   }
 
   nackMessage(connectionId: string, messageId: string, requeue = false): void {
     const session = this.sessions.get(connectionId);
-    session?.amqp.nackById(messageId, requeue);
+    if (!session) return;
+    session.amqp.nackById(messageId, requeue);
+    if (!requeue) this.removeFromBuffer(session, messageId);
+  }
+
+  private removeFromBuffer(session: ActiveSession, messageId: string): void {
+    for (const buffer of session.buffers.values()) {
+      if (buffer.get(messageId)) {
+        buffer.remove(messageId);
+        return;
+      }
+    }
   }
 
   async unsubscribeQueue(connectionId: string, consumerTag: string): Promise<void> {
@@ -103,16 +116,20 @@ export class ConnectionController {
     await session.amqp.unsubscribe(consumerTag);
   }
 
+  hasActiveSessions(): boolean {
+    return this.sessions.size > 0;
+  }
+
   publishMessage(
     connectionId: string,
     exchange: string,
     routingKey: string,
     body: Buffer,
-    contentType: string,
+    options: Record<string, unknown>,
   ): boolean {
     const session = this.sessions.get(connectionId);
     if (!session) return false;
-    return session.amqp.publish(exchange, routingKey, body, { contentType });
+    return session.amqp.publish(exchange, routingKey, body, options);
   }
 
   async replayMessage(connectionId: string, queueName: string, messageId: string): Promise<void> {
@@ -120,7 +137,7 @@ export class ConnectionController {
     if (!session) throw new Error(`No session for connection ${connectionId}`);
     const replay = session.replayServices.get(queueName);
     if (!replay) throw new Error(`No replay service for queue ${queueName}`);
-    await replay.replay(messageId, '');
+    await replay.replay(messageId);
   }
 
   async disposeAll(): Promise<void> {

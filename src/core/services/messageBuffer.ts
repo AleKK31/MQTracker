@@ -25,6 +25,14 @@ export class MessageBuffer implements IMessageStore {
     }
   }
 
+  remove(id: MessageId): void {
+    const slot = this.index.get(id);
+    if (slot === undefined) return;
+    this.buffer[slot] = undefined;
+    this.index.delete(id);
+    this.count = Math.max(0, this.count - 1);
+  }
+
   get(id: MessageId): Message | undefined {
     const slot = this.index.get(id);
     if (slot === undefined) return undefined;

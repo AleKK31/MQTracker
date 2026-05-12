@@ -17,6 +17,13 @@ export class TreeNode extends vscode.TreeItem {
     super(label, collapsibleState);
     this.contextValue = kind;
     this.iconPath = iconForKind(kind);
+    if (kind === 'queue') {
+      this.command = {
+        command: 'mqtracker.openMessageViewer',
+        title: 'Open Message Viewer',
+        arguments: [{ kind, connectionId, payload }],
+      };
+    }
   }
 }
 

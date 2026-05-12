@@ -5,3 +5,7 @@ out/
 .vscode-test/
 coverage/
 *.js.map
+
+# test files
+docker-compose.yml
+scripts/

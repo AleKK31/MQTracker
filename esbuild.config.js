@@ -15,7 +15,7 @@ const extensionOptions = {
   platform: 'node',
   target: 'node18',
   format: 'cjs',
-  external: ['vscode'],
+  external: ['vscode', 'better-sqlite3'],
 };
 
 /** @type {import('esbuild').BuildOptions} */

@@ -91,16 +91,6 @@
           "group": "inline"
         },
         {
-          "command": "mqtracker.openMessageViewer",
-          "when": "view == mqtracker.connections && viewItem == queue",
-          "group": "inline"
-        },
-        {
-          "command": "mqtracker.publishMessage",
-          "when": "view == mqtracker.connections && viewItem == connection",
-          "group": "1_actions"
-        },
-        {
           "command": "mqtracker.openConsumerInCode",
           "when": "view == mqtracker.connections && viewItem == queue",
           "group": "1_actions"
@@ -115,7 +105,10 @@
     "typecheck": "tsc -p . --noEmit",
     "test": "jest",
     "test:watch": "jest --watch",
-    "clean": "rm -rf dist"
+    "clean": "rm -rf dist",
+    "rabbit:up": "docker compose up -d",
+    "rabbit:down": "docker compose down",
+    "rabbit:seed": "node scripts/seed.js"
   },
   "repository": {
     "type": "git",
@@ -128,9 +121,11 @@
   "type": "commonjs",
   "devDependencies": {
     "@types/amqplib": "^0.10.8",
+    "@types/better-sqlite3": "^7.6.13",
     "@types/jest": "^30.0.0",
     "@types/nock": "^10.0.3",
     "@types/node": "^25.6.0",
+    "@types/sql.js": "^1.4.11",
     "@types/vscode": "^1.118.0",
     "esbuild": "^0.28.0",
     "jest": "^30.3.0",
@@ -140,6 +135,8 @@
   },
   "dependencies": {
     "amqplib": "^1.0.3",
+    "better-sqlite3": "^12.9.0",
+    "sql.js": "^1.14.1",
     "uuid": "^14.0.0",
     "zod": "^4.4.1"
   }

@@ -1,4 +1,6 @@
 import type { Message } from '../../core/models/message';
+import type { HistoryEntry } from '../../core/models/historyEntry';
+export type { HistoryEntry };
 
 // ---------------------------------------------------------------------------
 // Host → Webview
@@ -23,11 +25,17 @@ export interface ClearEvent {
   type: 'clear';
 }
 
+export interface HistoryLoadedEvent {
+  type: 'historyLoaded';
+  entries: HistoryEntry[];
+}
+
 export type HostToWebview =
   | MessagesLoadedEvent
   | MessageAddedEvent
   | MessagesBatchEvent
-  | ClearEvent;
+  | ClearEvent
+  | HistoryLoadedEvent;
 
 // ---------------------------------------------------------------------------
 // Webview → Host
@@ -60,6 +68,9 @@ export interface PublishEvent {
   routingKey: string;
   body: string;
   contentType: string;
+  deliveryMode: 1 | 2;
+  headers: Record<string, string>;
+  properties: Record<string, string>;
 }
 
 export type WebviewToHost = ReadyEvent | AckEvent | NackEvent | ReplayEvent | PublishEvent;

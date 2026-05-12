@@ -1,9 +1,10 @@
-import type { WebviewMessage } from '../../../src/ui/webview/protocol';
+import type { WebviewMessage, HistoryEntry } from '../../../src/ui/webview/protocol';
 
 export interface StoreState {
   messages: WebviewMessage[];
   filter: string;
   selectedId: string | null;
+  history: HistoryEntry[];
 }
 
 type StoreListener = (state: StoreState) => void;
@@ -25,6 +26,7 @@ export class Store {
     messages: [],
     filter: '',
     selectedId: null,
+    history: [],
   };
   private readonly listeners: StoreListener[] = [];
 
@@ -63,6 +65,18 @@ export class Store {
 
   setSelected(id: string | null): void {
     this.state = { ...this.state, selectedId: id };
+    this.notify();
+  }
+
+  removeMessage(id: string): void {
+    const messages = this.state.messages.filter((m) => m.id !== id);
+    const selectedId = this.state.selectedId === id ? null : this.state.selectedId;
+    this.state = { ...this.state, messages, selectedId };
+    this.notify();
+  }
+
+  setHistory(history: HistoryEntry[]): void {
+    this.state = { ...this.state, history };
     this.notify();
   }
 

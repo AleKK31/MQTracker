@@ -14,8 +14,15 @@ Extensão para Visual Studio Code que permite **inspecionar, debugar e interagir
 ### Interação
 
 - ACK / NACK manual
+- NACK com re-enfileiramento (NACK + requeue)
 - Replay de mensagens
 - Publicar eventos para qualquer exchange/routing key
+
+### Histórico
+
+- Histórico persistente de ações ACK/NACK/NACK-requeue por fila
+- Badges coloridos por tipo de ação na aba de histórico
+- Replay de qualquer entrada do histórico com pré-preenchimento automático do modal
 
 ---
 
@@ -26,25 +33,41 @@ Extensão para Visual Studio Code que permite **inspecionar, debugar e interagir
 3. Informe:
    - Host
    - Porta
-   - Credenciais
-   - Management Port
-4. Expanda a conexão
-5. Clique em uma fila para começar a inspecionar mensagens
+   - Usuário e senha
+   - Porta do Management
+   - Virtual host
+4. Expanda a conexão para ver filas e exchanges
+5. Clique em uma fila para abrir o painel de inspeção de mensagens
+6. Use a aba **History** para ver e reenviar ações anteriores
 
 ---
 
 ## Arquitetura
 
-core/ — modelos e interfaces puras  
-infra/ — integração com RabbitMQ (AMQP + HTTP API)  
-controllers/ — orquestração de conexões, buffers e estado  
-ui/ — TreeView, comandos e Webviews
+O projeto tem **dois processos separados** com builds independentes:
 
----
+```
+src/
+  core/models/               # Tipos puros: Connection, Queue, Exchange, Binding, Message, HistoryEntry
+  core/ports/                # Interfaces: IBrokerClient, IManagementApi, IMessageStore
+  core/services/             # MessageBuffer, ReplayService, ConsumerScanner
+  infra/amqp/                # AmqpClient -> canais separados para consume e publish
+  infra/http/                # ManagementApiClient
+  infra/storage/             # ConfigStore (globalState + SecretStorage) + HistoryStore (SQLite)
+  controllers/               # ConnectionController -> hub de sessões ativas
+  ui/tree/                   # RabbitTreeProvider + TreeNode
+  ui/commands/               # registerCommands -> todos os comandos mqtracker
+  ui/webview/                # MessageViewerPanel + protocol.ts
+
+webview-ui/src/
+  api/vscodeBridge.ts
+  state/store.ts             # Store + histórico
+  render.ts                  # DOM puro
+```
 
 ### Comunicação host ↔ webview
 
-Contrato compartilhado:
+Contrato compartilhado em `src/ui/webview/protocol.ts`:
 
 - **Host → Webview**
 
@@ -65,8 +88,9 @@ Contrato compartilhado:
 
 ## Segurança
 
-- Configurações persistidas via `vscode.Memento`
-- Credenciais armazenadas com `vscode.SecretStorage` (keychain do sistema)
+- Configurações de conexão persistidas via `vscode.Memento` (globalState)
+- Credenciais armazenadas com `vscode.SecretStorage` (keychain do sistema operacional)
+- Histórico de ações em SQLite local
 
 ---
 
@@ -75,4 +99,5 @@ Contrato compartilhado:
 - TypeScript
 - VS Code Extension API
 - amqplib (AMQP)
-- HTTP API do RabbitMQ
+- RabbitMQ Management HTTP API
+- SQLite

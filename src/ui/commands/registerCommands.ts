@@ -7,18 +7,20 @@ import { TreeNode } from '../tree/nodes/treeNode';
 import { RabbitTreeProvider } from '../tree/rabbitTreeProvider';
 import { MessageViewerPanel } from '../webview/messageViewerPanel';
 import { ConnectionFormPanel } from '../webview/connectionFormPanel';
+import type { HistoryStore } from '../../infra/storage/historyStore';
 
 export function registerCommands(
   context: vscode.ExtensionContext,
   controller: ConnectionController,
   treeProvider: RabbitTreeProvider,
   logger: Logger,
+  historyStore: HistoryStore,
 ): void {
   const cmds: [string, (...args: unknown[]) => unknown][] = [
     ['mqtracker.addConnection', () => addConnection(context.extensionUri, controller, treeProvider)],
     ['mqtracker.refresh', () => treeProvider.refresh()],
     ['mqtracker.removeConnection', (node) => removeConnection(node as TreeNode, controller, treeProvider)],
-    ['mqtracker.openMessageViewer', (node) => openMessageViewer(node as TreeNode, controller, logger, context.extensionUri)],
+    ['mqtracker.openMessageViewer', (node) => openMessageViewer(node as TreeNode, controller, logger, context.extensionUri, historyStore)],
     ['mqtracker.publishMessage', (node) => publishMessage(node as TreeNode, controller)],
     ['mqtracker.openConsumerInCode', (node) => openConsumerInCode(node as TreeNode)],
   ];
@@ -66,10 +68,11 @@ function openMessageViewer(
   controller: ConnectionController,
   logger: Logger,
   extensionUri: vscode.Uri,
+  historyStore: HistoryStore,
 ): void {
   if (node?.kind !== 'queue' || !node.connectionId) return;
   const queue = node.payload as Queue;
-  MessageViewerPanel.show(node.connectionId, queue.name, controller, logger, extensionUri);
+  MessageViewerPanel.show(node.connectionId, queue.name, controller, logger, extensionUri, historyStore);
 }
 
 async function publishMessage(node: TreeNode, controller: ConnectionController): Promise<void> {

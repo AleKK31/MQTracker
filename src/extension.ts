@@ -4,6 +4,7 @@ import { ConfigStore } from './infra/storage/configStore';
 import { ConnectionController } from './controllers/connectionController';
 import { RabbitTreeProvider } from './ui/tree/rabbitTreeProvider';
 import { registerCommands } from './ui/commands/registerCommands';
+import { HistoryStore } from './infra/storage/historyStore';
 
 export async function activate(context: vscode.ExtensionContext): Promise<void> {
   const outputChannel = vscode.window.createOutputChannel('MQTracker');
@@ -15,12 +16,14 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
   const configStore = new ConfigStore(context.secrets, context.globalState);
   const controller = new ConnectionController(configStore, logger);
   const treeProvider = new RabbitTreeProvider(controller);
+  const historyStore = new HistoryStore(context.globalStorageUri.fsPath);
 
   context.subscriptions.push(
     vscode.window.registerTreeDataProvider('mqtracker.connections', treeProvider),
+    { dispose: () => historyStore.close() },
   );
 
-  registerCommands(context, controller, treeProvider, logger);
+  registerCommands(context, controller, treeProvider, logger, historyStore);
 
   // Restore persisted connections
   try {
@@ -29,6 +32,14 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
   } catch (err) {
     logger.error('Failed to restore connections', err);
   }
+
+  const pollInterval = setInterval(() => {
+    if (controller.hasActiveSessions()) {
+      treeProvider.refresh();
+    }
+  }, 5_000);
+
+  context.subscriptions.push({ dispose: () => clearInterval(pollInterval) });
 
   logger.info('MQTracker activated');
 }
