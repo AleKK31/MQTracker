@@ -1,32 +1,30 @@
-import type { Message } from '../../core/models/message';
-import type { HistoryEntry } from '../../core/models/historyEntry';
+import type { Message } from "../../core/models/message";
+import type { HistoryEntry } from "../../core/models/historyEntry";
 export type { HistoryEntry };
 
-// ---------------------------------------------------------------------------
 // Host → Webview
-// ---------------------------------------------------------------------------
 
 export interface MessagesLoadedEvent {
-  type: 'messagesLoaded';
+  type: "messagesLoaded";
   messages: WebviewMessage[];
 }
 
 export interface MessageAddedEvent {
-  type: 'messageAdded';
+  type: "messageAdded";
   message: WebviewMessage;
 }
 
 export interface MessagesBatchEvent {
-  type: 'messagesBatch';
+  type: "messagesBatch";
   messages: WebviewMessage[];
 }
 
 export interface ClearEvent {
-  type: 'clear';
+  type: "clear";
 }
 
 export interface HistoryLoadedEvent {
-  type: 'historyLoaded';
+  type: "historyLoaded";
   entries: HistoryEntry[];
 }
 
@@ -37,33 +35,31 @@ export type HostToWebview =
   | ClearEvent
   | HistoryLoadedEvent;
 
-// ---------------------------------------------------------------------------
 // Webview → Host
-// ---------------------------------------------------------------------------
 
 export interface ReadyEvent {
-  type: 'ready';
+  type: "ready";
 }
 
 export interface AckEvent {
-  type: 'ack';
+  type: "ack";
   /** Opaque message ID — host resolves to deliveryTag internally */
   id: string;
 }
 
 export interface NackEvent {
-  type: 'nack';
+  type: "nack";
   id: string;
   requeue: boolean;
 }
 
 export interface ReplayEvent {
-  type: 'replay';
+  type: "replay";
   id: string;
 }
 
 export interface PublishEvent {
-  type: 'publish';
+  type: "publish";
   exchange: string;
   routingKey: string;
   body: string;
@@ -73,11 +69,14 @@ export interface PublishEvent {
   properties: Record<string, string>;
 }
 
-export type WebviewToHost = ReadyEvent | AckEvent | NackEvent | ReplayEvent | PublishEvent;
+export type WebviewToHost =
+  | ReadyEvent
+  | AckEvent
+  | NackEvent
+  | ReplayEvent
+  | PublishEvent;
 
-// ---------------------------------------------------------------------------
 // Shared types (safe to send to webview — no deliveryTag)
-// ---------------------------------------------------------------------------
 
 export interface WebviewMessage {
   id: string;
